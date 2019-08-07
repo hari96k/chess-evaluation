@@ -11,10 +11,10 @@ import random
 
 handler = chess.uci.InfoHandler()
 
-if(os.name == 'posix'):
+if os.name == 'posix':
     engine = chess.uci.popen_engine('/mnt/c/Users/Hari/Downloads/stockfish-9-win/stockfish-9-win/Windows/stockfish_9_x64.exe')
 else:
-    engine = chess.uci.popen_engine('C:/Users/Hari/Downloads/stockfish-9-win/stockfish-9-win/Windows/stockfish_9_x64.exe')
+    engine = chess.uci.popen_engine('C:/Users/Hari/Documents/stockfish-9-win/Windows/stockfish_9_x64.exe')
 engine.info_handlers.append(handler)
 
 
@@ -31,6 +31,7 @@ def exit_handler():
     print('Train.csv Updated!')
     print(fin.head())
 
+
 atexit.register(exit_handler)
 signal.signal(signal.SIGINT, exit_handler)
 
@@ -38,6 +39,8 @@ signal.signal(signal.SIGINT, exit_handler)
 Guarantees the initial board is not in checkmate
 initMoves specifies the number of random moves past the starting position
 '''
+
+
 def initBoard():
     initMoves = 3
     board = chess.Board()
@@ -58,10 +61,10 @@ board = initBoard()
 temp_train = []
 idx = 0
 
-#swhile True:
-for i in range(0, numPositions):
+while True:
+#for i in range(0, numPositions):
     randMove = random.choice(list(board.legal_moves))
-    #print('Random move: ', randMove)
+    # print('Random move: ', randMove)
 
     board.push(randMove)
     engine.position(board)
