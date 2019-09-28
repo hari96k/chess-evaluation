@@ -1,5 +1,5 @@
 import chess
-import chess.uci
+import chess.engine
 import chess.pgn
 
 import signal
@@ -8,15 +8,10 @@ import atexit
 import pandas as pd
 import random
 
-
-handler = chess.uci.InfoHandler()
-
 if os.name == 'posix':
-    engine = chess.uci.popen_engine('/mnt/c/Users/Hari/Downloads/stockfish-9-win/stockfish-9-win/Windows/stockfish_9_x64.exe')
+    engine = chess.engine.SimpleEngine.popen_uci('/mnt/c/Users/Hari/Downloads/stockfish-9-win/stockfish-9-win/Windows/stockfish_9_x64.exe')
 else:
-    engine = chess.uci.popen_engine('C:/Users/Hari/Documents/stockfish-9-win/Windows/stockfish_9_x64.exe')
-engine.info_handlers.append(handler)
-
+    engine = chess.engine.SimpleEngine.popen_uci('C:/Users/Hari/Documents/stockfish-9-win/Windows/stockfish_9_x64.exe')
 
 df_cols = ['Position', 'Score']
 if os.path.isfile('train.csv'):
@@ -67,21 +62,29 @@ while True:
     # print('Random move: ', randMove)
 
     board.push(randMove)
-    engine.position(board)
+
+    limit = chess.engine.Limit(depth=12)
+    info = engine.analyse(board=board, multipv=5, limit=limit)
 
     if board.is_game_over():
         board = initBoard()
         continue
 
-    engine.go(depth=16)
+    topMoves = []
     try:
-        score = handler.info["score"][1].cp / 100.0
+        for item in info:
+            move = item["pv"][0]
+            topMoves.append((move.from_square, move.to_square))
+
+        while len(topMoves) < 5:
+            topMoves.append(topMoves[-1])
+
     except TypeError:
         board = initBoard()
         continue
 
     #print('Evaluation value: ', score)
-    temp_train.append([board.fen(), score])
+    temp_train.append([board.fen(), topMoves])
 
     #print(board)
     #print(str(score) + '\n\n')
